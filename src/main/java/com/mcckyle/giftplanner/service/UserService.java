@@ -1,0 +1,130 @@
+//***************************************************************************************
+//
+//     Filename: UserService.java
+//     Author: Kyle McColgan
+//     Date: 5 December 2025
+//     Description: This file contains User-related business logic.
+//
+//***************************************************************************************
+
+package com.mcckyle.giftplanner.service;
+
+import com.mcckyle.giftplanner.dto.UserRegistrationDTO;
+import com.mcckyle.giftplanner.model.Role;
+import com.mcckyle.giftplanner.model.User;
+import com.mcckyle.giftplanner.repository.RoleRepository;
+import com.mcckyle.giftplanner.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+//***************************************************************************************
+
+@Service
+public class UserService implements UserRetrievalService
+{
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder)
+    {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public User registerUser(UserRegistrationDTO registrationDTO)
+    {
+        //Check for existing username or email.
+        if (userRepository.existsByUsername(registrationDTO.getUsername()))
+        {
+            throw new RuntimeException("Error: Username is already taken!");
+        }
+
+        if (userRepository.existsByEmail(registrationDTO.getEmail()))
+        {
+            throw new RuntimeException("Error: Email is already in use!");
+        }
+
+        //Create new user.
+        User user = new User(
+                registrationDTO.getUsername(),
+                registrationDTO.getEmail(),
+                passwordEncoder.encode(registrationDTO.getPassword())
+        );
+
+        //Assign roles - by default, every user gets "ROLE_USER".
+        Role userRole = roleRepository.findByName("ROLE_USER");
+        if (userRole == null)
+        {
+            userRole = new Role("ROLE_USER");
+            roleRepository.save(userRole);
+        }
+
+        Set<Role> roles = new HashSet<>();
+        roles.add(userRole);
+        user.setRoles(roles);
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username)
+    {
+        return userRepository.findByUsername(username);
+    }
+
+    public Optional<User> findById(Integer id)
+    {
+        return userRepository.findById(id);
+    }
+
+    @Transactional
+    @PostConstruct
+    public void initRoles()
+    {
+        if (roleRepository.count() == 0)
+        {
+            Role roleUser = new Role("ROLE_USER");
+            Role roleAdmin = new Role("ROLE_ADMIN");
+            roleRepository.save(roleUser);
+            roleRepository.save(roleAdmin);
+        }
+    }
+
+    public boolean userExists(Integer userId)
+    {
+        return userRepository.existsById(userId);
+    }
+
+    public void updatePassword(Integer userId, String newPassword)
+    {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        String hashed = passwordEncoder.encode(newPassword);
+        user.setPassword(hashed);
+
+        userRepository.save(user);
+    }
+
+    public void deleteUserAccount(Integer userId)
+    {
+        if ( ! userRepository.existsById(userId))
+        {
+            throw new RuntimeException("User does not exist.");
+        }
+
+        userRepository.deleteById(userId);
+    }
+}
+
+//***************************************************************************************

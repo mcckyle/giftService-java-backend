@@ -2,7 +2,7 @@
 //
 //     Filename: UserDetailsServiceImpl.java
 //     Author: Kyle McColgan
-//     Date: 3 December 2025
+//     Date: 9 December 2025
 //     Description: This file contains database functionality for users.
 //
 //***************************************************************************************
@@ -37,9 +37,10 @@ public class UserDetailsServiceImpl implements UserDetailsService
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
-        User user = userRetrievalHelper.findByUsername(username)
+        //Authenticate with email to match AuthenticationController.authenticateUser()...
+        User user = userRetrievalHelper.findByEmail(username) //Authenticate with email...
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found with username" + username));
+                        new UsernameNotFoundException("User not found with email: " + username));
 
         return buildUserDetails(user);
     }

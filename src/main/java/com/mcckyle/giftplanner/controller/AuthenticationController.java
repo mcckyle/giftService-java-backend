@@ -2,7 +2,7 @@
 //
 //   Filename: AuthenticationController.java
 //   Author: Kyle McColgan
-//   Date: 2 December 2025
+//   Date: 10 December 2025
 //   Description: This file provides register and login functionality.
 //
 //***************************************************************************************
@@ -105,7 +105,7 @@ public class AuthenticationController
         // Authenticate the user using the provided credentials from DTO.
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        authenticationDTO.getUsername(),
+                        authenticationDTO.getEmail(),
                         authenticationDTO.getPassword()
                 )
         );
@@ -148,7 +148,7 @@ public class AuthenticationController
         ResponseCookie clearCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(0) //Expires immediately.
                 .build();

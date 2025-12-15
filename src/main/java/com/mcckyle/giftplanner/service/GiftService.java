@@ -2,7 +2,7 @@
 //
 //     Filename: GiftService.java
 //     Author: Kyle McColgan
-//     Date: 3 December 2025
+//     Date: 15 December 2025
 //     Description: This file contains Gift-related business logic.
 //
 //***************************************************************************************
@@ -96,7 +96,7 @@ public class GiftService
     }
 
     @Transactional
-    public void deletePerson(Integer userId, Integer giftId)
+    public void deleteGift(Integer userId, Integer giftId)
     {
         Gift gift = giftRepository.findById(giftId)
                 .orElseThrow(() -> new RuntimeException("Gift not found!"));

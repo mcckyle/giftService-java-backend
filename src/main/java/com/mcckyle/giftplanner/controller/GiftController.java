@@ -2,7 +2,7 @@
 //
 //   Filename: GiftController.java
 //   Author: Kyle McColgan
-//   Date: 3 December 2025
+//   Date: 15 December 2025
 //   Description: This file provides Gift functionality.
 //
 //***************************************************************************************
@@ -78,7 +78,7 @@ public class GiftController
             @AuthenticationPrincipal UserDetailsImpl user
     )
     {
-        giftService.deletePerson(user.getId(), giftId);
+        giftService.deleteGift(user.getId(), giftId);
 
         return ResponseEntity.ok().build();
     }
